@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import Greet from './components/Greet'
-import Welcome from './components/Welcome';
+// import Greet from './components/Greet'
+// import Welcome from './components/Welcome';
 import reportWebVitals from './reportWebVitals';
-import Message from './components/Message';
-import Counter from './components/Counter';
-import ClassClick from './components/ClassClick';
-import FunctionClick from './components/FunctionClick';
-import EventBind from './components/EventBind';
+// import Message from './components/Message';
+// import Counter from './components/Counter';
+// import ClassClick from './components/ClassClick';
+// import FunctionClick from './components/FunctionClick';
+// import EventBind from './components/EventBind';
 import ParentComponent from './components/ParentComponent';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
