@@ -36,6 +36,15 @@ jobs:
           sudo systemctl enable nginx
           sudo systemctl start nginx
 
+    - name: Clean old build folder on EC2
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          rm -rf ${{ secrets.EC2_APP_PATH }}/*
+          
     - name: Upload React build
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -43,7 +52,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         source: "build/*"
-        target: ${{ secrets.EC2_APP_PATH }}/build
+        target: ${{ secrets.EC2_APP_PATH }}
 
     - name: Deploy to Nginx root and update config
       uses: appleboy/ssh-action@v0.1.10
@@ -52,10 +61,13 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Copy build files
-          sudo cp -r ${{ secrets.EC2_APP_PATH }}/build/* /var/www/html/
+          # Optional: Clear old content
+          sudo rm -rf /var/www/html/*
 
-          # Replace Nginx config to support React routing
+          # Copy build files directly into nginx root
+          sudo cp -r ${{ secrets.EC2_APP_PATH }}/* /var/www/html/
+
+          # Overwrite nginx config
           sudo tee /etc/nginx/sites-available/default > /dev/null <<EOF
           server {
               listen 80;
@@ -70,6 +82,7 @@ jobs:
           }
           EOF
 
-          # Reload Nginx with new config
+          # Reload nginx
           sudo nginx -t && sudo systemctl reload nginx
+
 
