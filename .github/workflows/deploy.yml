@@ -44,7 +44,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           rm -rf ${{ secrets.EC2_APP_PATH }}/*
-          
+
     - name: Upload React build
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -65,7 +65,7 @@ jobs:
           sudo rm -rf /var/www/html/*
 
           # Copy build files directly into nginx root
-          sudo cp -r ${{ secrets.EC2_APP_PATH }}/* /var/www/html/
+          sudo cp -r ${{ secrets.EC2_APP_PATH }}/build/* /var/www/html/
 
           # Overwrite nginx config
           sudo tee /etc/nginx/sites-available/default > /dev/null <<EOF
