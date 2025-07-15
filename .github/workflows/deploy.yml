@@ -1,0 +1,56 @@
+name: Deploy React App to EC2
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js & Build
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - run: |
+        npm install
+        npm run build
+
+    - name: Setup EC2 (install Nginx, Node)
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo apt update
+          sudo apt install -y nginx curl
+          curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+          sudo apt install -y nodejs
+          sudo systemctl enable nginx
+          sudo systemctl start nginx
+
+    - name: Upload React build
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "build/*"
+        target: ${{ secrets.EC2_APP_PATH }}/build
+
+    - name: Deploy to Nginx root
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo cp -r ${{ secrets.EC2_APP_PATH }}/build/* /var/www/html/
+          sudo systemctl reload nginx
